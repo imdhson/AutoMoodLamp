@@ -16,5 +16,5 @@ def download_file(url, filename='mp_firmware.py'):
     else:
         print(f"Download fail: {response.status_code}")
 
-url = "https://github.com/imdhson/AutoMoodLamp/raw/master/client_firmware/mp_firmware.py"  # 다운로드할 파일의 URL
+url = "https://github.com/imdhson/AutoMoodLamp/raw/master/client_firmware/mp_firmware_ota.py"  # 다운로드할 파일의 URL
 download_file(url)

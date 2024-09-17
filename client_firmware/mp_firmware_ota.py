@@ -8,6 +8,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
 from datetime import datetime
+from components.is_conversation import *
+from components.sigmoid import *
 import csv
 
 # 오디오 설정
@@ -17,8 +19,11 @@ FORMAT = pyaudio.paFloat32
 CHANNELS = 1
 RATE = 16000
 
+#대화모드 설정 0.x~...
+SPEECH_THRESHOLD = 2
+
 # YAMNet 모델 로드
-model = tf.saved_model.load('audio_client/yamnetModel')
+model = tf.saved_model.load('client_firmware/yamnetModel')
 #오류시 Current working directory 확인
 
 # 클래스 이름 로드
@@ -59,6 +64,9 @@ stream = pyaudio.open(format=FORMAT,
 
 print("* 녹음 시작")
 
+#대화모드 발화 여부 점수
+speech_detect_score = 0
+
 try:
     while True:
         # 오디오 데이터 읽기
@@ -79,12 +87,20 @@ try:
         top_class = class_names[top_class_index]
         top_class_score = int(average_scores[top_class_index]* 100)  # 최고 점수 클래스의 정확도
 
+        if is_conversation(top_class_index):
+            speech_detect_score += sigmoid(average_scores[top_class_index])
+        elif speech_detect_score >= 0:
+            speech_detect_score -= sigmoid(average_scores[top_class_index])
+        
+        #출력
         avg_volume = np.frombuffer(data, dtype=np.int16)
-        # 현재 시간을 초까지만 포맷팅
         print(f"{current_time_before} ~ {current_time_after}", end=" | ")
-
         print("평균 볼륨: ", int(np.average(np.abs(avg_volume))), end=' | ')
-        print(f"{top_class}: {top_class_score}%")
+        print(f"대화모드점수:{speech_detect_score:.2f}", end = ' | ')
+        print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
+        if speech_detect_score >= SPEECH_THRESHOLD:
+            print(f"[대화모드]", end = '')
+        print()
 
 except KeyboardInterrupt:
     print("* 녹음 종료")
