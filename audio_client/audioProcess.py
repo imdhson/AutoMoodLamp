@@ -18,7 +18,7 @@ CHANNELS = 1
 RATE = 16000
 
 # YAMNet 모델 로드
-model = tf.saved_model.load('audio/yamnetModel')
+model = tf.saved_model.load('audio_client/yamnetModel')
 #오류시 Current working directory 확인
 
 # 클래스 이름 로드

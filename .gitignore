@@ -9,6 +9,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+mp_firmware.py
 
 # C extensions
 *.so
