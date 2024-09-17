@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, logout
 from .serializers import UserSerializer, LoginSerializer
 
 User = get_user_model()
@@ -40,6 +40,34 @@ class LoginView(APIView):
                     "token": token.key
                 }, status=status.HTTP_200_OK)
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LogoutView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 토큰 삭제
+        request.user.auth_token.delete()
+        # Django 세션 로그아웃 (세션 기반 인증을 사용하는 경우)
+        logout(request)
+        return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+class GetTokenView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        token = request.auth
+        return Response({"token": token.key}, status=status.HTTP_200_OK)
+
+class GetUserView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UpdateDeviceIdView(APIView):
     authentication_classes = [TokenAuthentication]
