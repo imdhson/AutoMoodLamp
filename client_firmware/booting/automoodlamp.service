@@ -1,0 +1,12 @@
+; /etc/systemd/system/ 에 저장해야함.;
+
+[Unit]
+Description=Auto Mood Lamp
+
+[Service]
+ExecStart=/home/imdhson/automoodlamp.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
