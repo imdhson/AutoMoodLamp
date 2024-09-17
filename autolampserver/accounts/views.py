@@ -1,33 +1,48 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate, login, get_user_model
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
+from django.contrib.auth import authenticate, get_user_model
 from .serializers import UserSerializer, LoginSerializer
 
 User = get_user_model()
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                "user": UserSerializer(user).data,
+                "token": token.key
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(username=username, password=password)
             if user:
-                login(request, user)
-                return Response({"message": "로그인 성공", "user": UserSerializer(user).data}, status=status.HTTP_200_OK)
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    "message": "로그인 성공",
+                    "user": UserSerializer(user).data,
+                    "token": token.key
+                }, status=status.HTTP_200_OK)
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class UpdateDeviceIdView(APIView):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -39,6 +54,7 @@ class UpdateDeviceIdView(APIView):
         return Response({"error": "Device ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 class SequenceDataView(APIView):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
