@@ -9,6 +9,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# 직접 추가함
+db.sqlite3
 mp_firmware.py
 
 # C extensions

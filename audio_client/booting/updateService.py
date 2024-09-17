@@ -1,5 +1,7 @@
 import requests
-import os
+
+#이 스크립트는 GitHub 퍼블릭 repository에서 클라이언트를 위한 펌웨어를 매 부팅시 마다 다운로드 받아 OTA를 구현함.
+#인터넷 연결 없을 경우 다운로드 받지않고 기존 스크립트를 사용함.
 
 def download_file(url, filename='mp_firmware.py'):
     # 파일 다운로드
@@ -14,5 +16,5 @@ def download_file(url, filename='mp_firmware.py'):
     else:
         print(f"Download fail: {response.status_code}")
 
-url = "https://github.com/imdhson/AutoMoodLamp/raw/master/audio_client/audioProcess.py"  # 다운로드할 파일의 URL
+url = "https://github.com/imdhson/AutoMoodLamp/raw/master/audio_client/mp_firmware.py"  # 다운로드할 파일의 URL
 download_file(url)

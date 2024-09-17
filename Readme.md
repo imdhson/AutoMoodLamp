@@ -10,7 +10,7 @@
 프로젝트 실행을 위해 다음 라이브러리를 설치해야 합니다:
 
 ```bash
-pip install pyaudio tensorflow python-dotenv
+pip install pyaudio tensorflow python-dotenv django djangorestframework
 ```
 
 ## 주요 기능
@@ -24,7 +24,9 @@ pip install pyaudio tensorflow python-dotenv
 1. 프로젝트를 클론합니다.
 2. 필요한 라이브러리를 설치합니다.
 3. `.env` 파일을 생성하고 필요한 환경 변수를 설정합니다.
-4. 메인 스크립트를 실행합니다.
+4. 클라이언트 펌웨어 사용시 RPi 환경에 venv 세팅후 Systemctl에 등록하고 .sh 내에 있는 venv 환경 안에서 패키지 import 등의 세팅을 해야함.
+    1. python -m venv 가상환경이름 
+    2. source 가상환경이름/bin/activate
 
 ## 기여 방법
 
