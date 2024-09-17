@@ -8,9 +8,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
 from datetime import datetime
-from components.is_conversation import *
-from components.sigmoid import *
 import csv
+import math
 
 # 오디오 설정
 CHUNK = 16000  # 한번에 처리할 오디오 수
@@ -20,18 +19,13 @@ CHANNELS = 1
 RATE = 16000
 
 #대화모드 설정 0.x~...
-SPEECH_THRESHOLD = 2
+SPEECH_THRESHOLD = 0.5
 
 # YAMNet 모델 로드
 model = tf.saved_model.load('client_firmware/yamnetModel')
 #오류시 Current working directory 확인
 
 # 클래스 이름 로드
-import tensorflow as tf
-import csv
-
-class_map_path = model.class_map_path().numpy()
-
 import tensorflow as tf
 import csv
 
@@ -51,7 +45,16 @@ def class_names_from_csv(class_map_csv_text):
 
 class_names = class_names_from_csv(class_map_path)
 
+#---------------------------
+def is_conversation(class_idx):
+    speech_arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 25, 26, 27, 28, 29, 30, 31, 32, 63, 64, 65}
+    #대화와 연관된 클래스의 집합
+    if class_idx in speech_arr:
+        return True
+    return False
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
 
 pyaudio = pyaudio.PyAudio()
 
@@ -87,10 +90,13 @@ try:
         top_class = class_names[top_class_index]
         top_class_score = int(average_scores[top_class_index]* 100)  # 최고 점수 클래스의 정확도
 
-        if is_conversation(top_class_index):
+        if is_conversation(top_class_index) and speech_detect_score < SPEECH_THRESHOLD*4:
             speech_detect_score += sigmoid(average_scores[top_class_index])
-        elif speech_detect_score >= 0:
+        elif speech_detect_score >= SPEECH_THRESHOLD and not is_conversation(top_class_index):
+            speech_detect_score -= sigmoid(speech_detect_score)
+        elif not is_conversation(top_class_index) and speech_detect_score > -1:
             speech_detect_score -= sigmoid(average_scores[top_class_index])
+
         
         #출력
         avg_volume = np.frombuffer(data, dtype=np.int16)
@@ -109,6 +115,7 @@ except KeyboardInterrupt:
 stream.stop_stream()
 stream.close()
 pyaudio.terminate()
+
 
 
 
