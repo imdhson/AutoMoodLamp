@@ -13,6 +13,7 @@ __pycache__/
 # 직접 추가함
 db.sqlite3
 mp_firmware.py
+.login
 
 # C extensions
 *.so
