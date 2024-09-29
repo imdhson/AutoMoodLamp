@@ -107,6 +107,8 @@ try:
         if speech_detect_score >= SPEECH_THRESHOLD:
             print(f"[대화모드]", end = '')
         print()
+        #매 3초마다 결과 나오면 server/accounts/post-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
+        # 서버의 로그인중인 계정(token)에 업로드
 
 except KeyboardInterrupt:
     print("* 녹음 종료")
