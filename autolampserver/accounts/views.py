@@ -81,22 +81,23 @@ class UpdateDeviceIdView(APIView):
             return Response({"message": "Device ID updated successfully"}, status=status.HTTP_200_OK)
         return Response({"error": "Device ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-class SequenceDataView(APIView):
+class AddSequenceDataView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        datetime = request.data.get('datetime')
-        class_idx = request.data.get('classIdx')
-        number = request.data.get('number')
+        timestamp = request.data.get('datetime')
+        class_idx = request.data.get('class_idx')
+        class_name = request.data.get('class_name')
+        percent = request.data.get('percent')
 
-        if datetime and class_idx is not None and number is not None:
+        if timestamp and class_idx is not None and percent is not None:
             try:
-                request.user.add_sequence_data(datetime, class_idx, int(number))
+                request.user.add_sequence_data(timestamp, class_idx, int(percent))
                 return Response({"message": "Sequence data added successfully"}, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "datetime, classIdx, and number are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "timestamp, class_idx, class_name, and percent are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         sequence_data = request.user.get_sequence_data()

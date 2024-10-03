@@ -9,7 +9,12 @@ import tensorflow as tf
 import tensorflow_hub as hub
 from datetime import datetime
 import csv
+import os
+import requests
 import math
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # 오디오 설정
 CHUNK = 16000  # 한번에 처리할 오디오 수
@@ -21,14 +26,56 @@ RATE = 16000
 #대화모드 설정 0.x~...
 SPEECH_THRESHOLD = 0.5
 
+#REST API - 서버에 로그인 수행
+payload = {
+    'username': os.getenv('AUTH_ID'),
+    'password': os.getenv('AUTH_PW'),
+}
+login_server_url = os.getenv('SERVER_URL') + "/auth/login/"
+try:
+    response = requests.post(login_server_url, data=payload)
+
+    if response.status_code == 200:
+        token = response.json().get('token')
+        if token:
+            print(f"토큰을 성공적으로 받음.{token}")
+        else:
+            print("토큰 저장 실패")
+    else:
+        print(f"오류 발생: HTTP 상태 코드 {response.status_code}")
+        print(f"오류 메시지: {response.text}")
+except requests.exceptions.RequestException as e:
+    print(f"requests 오류 {e}")
+
+def add_sequence_data_rest(token, timestamp, class_idx, class_name, percent):
+    rest_url = os.getenv('SERVER_URL')+"/auth/add-sequence-data/"
+    try:
+        header = {'Authorization': f'token {token}',}
+        payload = {'datetime' : timestamp,
+                   'class_idx': class_idx,
+                   'class_name': class_name,
+                   'percent': percent,}
+        response = requests.post(rest_url, data=payload, headers=header)
+
+        if response.status_code == 200:
+            message = response.json().get('message')
+            if message:
+                print(f"{message}")
+            else:
+                print("add sequence 에러!")
+        else:
+            print(f"오류 발생: HTTP 상태 코드 {response.status_code}")
+            print(f"오류 메시지: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"requests 오류 {e}")
+            
+
+
 # YAMNet 모델 로드
 model = tf.saved_model.load('client_firmware/yamnetModel')
 #오류시 Current working directory 확인
 
 # 클래스 이름 로드
-import tensorflow as tf
-import csv
-
 class_map_path = model.class_map_path().numpy()
 
 def class_names_from_csv(class_map_csv_text):
@@ -107,8 +154,12 @@ try:
         if speech_detect_score >= SPEECH_THRESHOLD:
             print(f"[대화모드]", end = '')
         print()
-        #매 3초마다 결과 나오면 server/accounts/post-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
+        #매 3초마다 결과 나오면 server/accounts/add-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
         # 서버의 로그인중인 계정(token)에 업로드
+        add_sequence_data_rest(token=token, timestamp=current_time_before,
+                                class_idx=top_class_index, 
+                                class_name=top_class, 
+                                percent=top_class_score)
 
 except KeyboardInterrupt:
     print("* 녹음 종료")

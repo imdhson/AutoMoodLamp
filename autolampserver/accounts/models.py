@@ -5,12 +5,10 @@ class CustomUser(AbstractUser):
     deviceId = models.CharField(max_length=255, blank=True, null=True)
     sequenceData = models.JSONField(default=dict)
 
-    def add_sequence_data(self, datetime, class_idx, percent):
-        if not isinstance(percent, int):
-            raise ValueError("Number must be an integer")
-        if not isinstance(class_idx, int):
-            raise ValueError("Number must be an integer")
-        self.sequenceData = models.JSONField(default=dict)
+    def add_sequence_data(self, timestamp, class_idx, class_name, percent):
+        if not isinstance(percent, int) or not isinstance(class_idx, int) or not isinstance(class_name, str):
+            raise ValueError("class_idx and percent must be integers")
+        self.sequenceData[timestamp] = {"class_idx": class_idx, "percent": percent, "class_name": class_name}
         self.save()
 
     def get_sequence_data(self):
