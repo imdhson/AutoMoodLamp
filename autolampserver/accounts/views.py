@@ -93,7 +93,7 @@ class AddSequenceDataView(APIView):
 
         if timestamp and class_idx is not None and percent is not None:
             try:
-                request.user.add_sequence_data(timestamp, class_idx, int(percent))
+                request.user.add_sequence_data(timestamp, class_idx, class_name, percent)
                 return Response({"message": "Sequence data added successfully"}, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
