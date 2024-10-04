@@ -64,8 +64,8 @@ def add_sequence_data_rest(token, timestamp, class_idx, class_name, percent):
             else:
                 print("add sequence 에러!")
         else:
-            print(f"오류 발생: HTTP 상태 코드 {response.status_code}")
-            print(f"오류 메시지: {response.text}")
+            print(f": HTTP 상태 코드 {response.status_code}")
+            print(f"{response.text}")
     except requests.exceptions.RequestException as e:
         print(f"requests 오류 {e}")
             
@@ -120,9 +120,9 @@ speech_detect_score = 0
 try:
     while True:
         # 오디오 데이터 읽기
-        current_time_before = datetime.now().strftime("%H:%M[%S]")
+        current_time_before = datetime.now().isoformat()
         data = stream.read(CHUNK*SECOND)
-        current_time_after = datetime.now().strftime("%H:%M:[%S]")
+        current_time_after = datetime.now().isoformat()
         audio = np.frombuffer(data, dtype=np.float32)
 
         #YAMNet 모델 예측 by frame 평균 내서 n초동안의 최적 결과만 도출
@@ -168,26 +168,3 @@ except KeyboardInterrupt:
 stream.stop_stream()
 stream.close()
 pyaudio.terminate()
-
-
-
-
-
-
-'''
-        # YAMNet 모델로 예측
-        scores, embeddings, spectrogram = model(audio)
-        scores = scores.numpy()
-        # print("scores shape", scores.shape)
-
-        # 상위 n개 예측 결과 출력
-        socresOfClasses = np.argsort(scores[0])[-1:][::-1] 
-        #[클래스의 idx] 내림차순으로 가장 높은 n개
-        avg_volume = np.frombuffer(data, dtype=np.int16)
-        print(datetime.now(), end='|')
-        print("평균 볼륨: ", int(np.average(np.abs(avg_volume))), end=' | ')
-        # print("예측 결과 [클래스]:float",  end=' | ')
-        for i in socresOfClasses: # i에는 클래스idx가 들어감
-            #scores[프레임idx][class종류] 따라서 프레임 idx는 SECOND에 따라 바뀔 수 있음
-            print(f"{class_names[i]}: {scores[0][i]:.3f}")
-'''
