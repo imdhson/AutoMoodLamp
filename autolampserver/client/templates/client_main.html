@@ -54,10 +54,10 @@
             }
 
             try {
-                const response = await fetch('http://cciicc.cc:7777/auth/login/', {
+                const response = await fetch('http://cciicc.cc:7777/auth/get-user/', {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `token ${token}`
                     }
                 });
 
