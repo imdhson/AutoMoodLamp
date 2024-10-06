@@ -10,6 +10,7 @@ import tensorflow_hub as hub
 from datetime import datetime
 import csv
 import os
+import scipy
 import requests
 import math
 
@@ -17,11 +18,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 오디오 설정
-CHUNK = 16000  # 한번에 처리할 오디오 수
+CHUNK = 44100  # 한번에 처리할 오디오 수
 SECOND = 3
-FORMAT = pyaudio.paFloat32
+FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 16000
+RATE = 44100
 
 #대화모드 설정 0.x~...
 SPEECH_THRESHOLD = 0.5
@@ -70,7 +71,6 @@ def add_sequence_data_rest(token, timestamp, class_idx, class_name, percent):
         print(f"requests 오류 {e}")
             
 
-
 # YAMNet 모델 로드
 model = tf.saved_model.load('client_firmware/yamnetModel')
 #오류시 Current working directory 확인
@@ -113,6 +113,7 @@ stream = pyaudio.open(format=FORMAT,
                 frames_per_buffer=CHUNK*SECOND)
 
 print("* 녹음 시작")
+conv_mode_data = None
 
 #대화모드 발화 여부 점수
 speech_detect_score = 0
@@ -123,10 +124,20 @@ try:
         current_time_before = datetime.now().isoformat()
         data = stream.read(CHUNK*SECOND)
         current_time_after = datetime.now().isoformat()
-        audio = np.frombuffer(data, dtype=np.float32)
 
+        #YamNet을 위한 변환
+        # 바이트 데이터를 16비트 정수 배열로 변환
+        audio_data = np.frombuffer(data, dtype=np.int16)
+
+        # 필요한 경우 float32로 변환하고 정규화
+        audio_data_float = audio_data.astype(np.float32) / np.iinfo(np.int16).max
+
+        # 리샘플링 계산
+        numbers_of_samples = round(len(audio_data_float) * float(16000) / RATE)
+        audio_resampled = scipy.signal.resample(audio_data_float, numbers_of_samples)
+        
         #YAMNet 모델 예측 by frame 평균 내서 n초동안의 최적 결과만 도출
-        scores, embeddings, spectrogram = model(audio)
+        scores, embeddings, spectrogram = model(audio_resampled)
         scores = scores.numpy()
 
         # 모든 프레임의 점수를 평균내어 전체 오디오에 대한 단일 점수 벡터 생성
@@ -152,7 +163,11 @@ try:
         print(f"대화모드점수:{speech_detect_score:.2f}", end = ' | ')
         print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
         if speech_detect_score >= SPEECH_THRESHOLD:
+            conv_mode_data.append(data)
             print(f"[대화모드]", end = '')
+        elif conv_mode_data != None and speech_detect_score >= SPEECH_THRESHOLD:
+            conv_mode_data = None
+            # pplx
         print()
         #매 3초마다 결과 나오면 server/accounts/add-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
         # 서버의 로그인중인 계정(token)에 업로드

@@ -187,7 +187,7 @@
         // 회원가입 함수
         async function register(username, password) {
             try {
-                const response = await fetch('http://cciicc.cc:7777/auth/register', {
+                const response = await fetch('http://cciicc.cc:7777/auth/register/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
