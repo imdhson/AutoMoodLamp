@@ -6,9 +6,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate, get_user_model, logout
 from .serializers import UserSerializer, LoginSerializer
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
 
+@csrf_exempt
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -23,6 +25,7 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_exempt
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -41,6 +44,7 @@ class LoginView(APIView):
                 }, status=status.HTTP_200_OK)
         return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
+@csrf_exempt
 class LogoutView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -52,6 +56,7 @@ class LogoutView(APIView):
         logout(request)
         return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
 
+@csrf_exempt
 class GetTokenView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -60,6 +65,7 @@ class GetTokenView(APIView):
         token = request.auth
         return Response({"token": token.key}, status=status.HTTP_200_OK)
 
+@csrf_exempt
 class GetUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -69,6 +75,7 @@ class GetUserView(APIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+@csrf_exempt
 class UpdateDeviceIdView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -81,6 +88,7 @@ class UpdateDeviceIdView(APIView):
             return Response({"message": "Device ID updated successfully"}, status=status.HTTP_200_OK)
         return Response({"error": "Device ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_exempt
 class AddSequenceDataView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

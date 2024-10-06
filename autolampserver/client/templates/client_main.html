@@ -1,2 +1,103 @@
-<h1>Hello 태영</h1>
-<!-- #태영이 수정해야 할 것 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>SPA API 토큰 로그인 예제</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 400px; margin: 50px auto; }
+        input { width: 100%; padding: 10px; margin: 5px 0; }
+        button { width: 100%; padding: 10px; }
+        #userInfo { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>로그인</h2>
+        <input type="text" id="username" placeholder="사용자 이름" required />
+        <input type="password" id="password" placeholder="비밀번호" required />
+        <button id="loginButton">로그인</button>
+
+        <div id="userInfo"></div>
+    </div>
+
+    <script>
+        async function login(username, password) {
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('로그인 실패');
+                }
+
+                const data = await response.json();
+                // 토큰을 로컬 스토리지에 저장
+                localStorage.setItem('authToken', data.token);
+                return data.token;
+            } catch (error) {
+                console.error(error);
+                alert('로그인에 실패했습니다.');
+            }
+        }
+
+        async function getUser() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/login/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('사용자 정보 가져오기 실패');
+                }
+
+                const userData = await response.json();
+                console.log('사용자 정보:', userData);
+                displayUserInfo(userData);
+            } catch (error) {
+                console.error(error);
+                alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        function displayUserInfo(userData) {
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = `
+                <h3>사용자 정보</h3>
+                <p><strong>이름:</strong> ${userData.name}</p>
+                <p><strong>이메일:</strong> ${userData.email}</p>
+                <!-- 추가 사용자 정보 표시 가능 -->
+            `;
+        }
+
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                alert('사용자 이름과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            const token = await login(username, password);
+            if (token) {
+                await getUser();
+            }
+        });
+    </script>
+</body>
+</html>

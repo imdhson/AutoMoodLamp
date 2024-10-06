@@ -10,8 +10,13 @@
 프로젝트 실행을 위해 다음 라이브러리를 설치해야 합니다:
 
 ```bash
-pip install pyaudio tensorflow python-dotenv django djangorestframework
+pip install pyaudio tensorflow python-dotenv django djangorestframework requests tensorflow-hub
 ```
+
+## 개발 중 메모 
+
+autolampserver django 에서 auth 패키지는 API 방식(토큰) 로그인을 담당. <br>
+client 패키지는 실제 Web Application을 나타냄.
 
 ## 주요 기능
 
