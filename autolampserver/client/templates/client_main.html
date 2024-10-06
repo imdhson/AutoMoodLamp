@@ -2,26 +2,164 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>SPA API 토큰 로그인 예제</title>
+    <title>SPA API 로그인 및 회원가입 예제</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { max-width: 400px; margin: 50px auto; }
-        input { width: 100%; padding: 10px; margin: 5px 0; }
-        button { width: 100%; padding: 10px; }
-        #userInfo { margin-top: 20px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            width: 100%; 
+            padding: 10px; 
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover { 
+            background-color: #218838;
+        }
+        #userInfo { 
+            margin-top: 20px; 
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .toggle-form {
+            width: 48%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .toggle-form:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        @media (max-width: 500px) {
+            .toggle-form {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>로그인</h2>
-        <input type="text" id="username" placeholder="사용자 이름" required />
-        <input type="password" id="password" placeholder="비밀번호" required />
-        <button id="loginButton">로그인</button>
+        <!-- 로그인 폼 -->
+        <div id="loginForm">
+            <h2>로그인</h2>
+            <input type="text" id="loginUsername" placeholder="사용자 이름" required />
+            <input type="password" id="loginPassword" placeholder="비밀번호" required />
+            <button id="loginButton">로그인</button>
+            <div class="button-group">
+                <button id="showRegister" class="toggle-form">회원가입</button>
+            </div>
+        </div>
 
-        <div id="userInfo"></div>
+        <!-- 회원가입 폼 -->
+        <div id="registerForm" class="hidden">
+            <h2>회원가입</h2>
+            <input type="text" id="registerUsername" placeholder="사용자 이름" required />
+            <input type="password" id="registerPassword" placeholder="비밀번호" required />
+            <button id="registerButton">회원가입</button>
+            <div class="button-group">
+                <button id="showLogin" class="toggle-form">로그인</button>
+            </div>
+        </div>
+
+        <!-- 사용자 정보 표시 섹션 -->
+        <div id="userInfo">
+            <h3>사용자 정보</h3>
+            <table>
+                <tr>
+                    <th>사용자 이름</th>
+                    <td id="displayUsername"></td>
+                </tr>
+                <tr>
+                    <th>이메일</th>
+                    <td id="displayEmail"></td>
+                </tr>
+                <tr>
+                    <th>디바이스 ID</th>
+                    <td id="displayDeviceId"></td>
+                </tr>
+            </table>
+
+            <h3>시퀀스 데이터</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>타임스탬프</th>
+                        <th>클래스 인덱스</th>
+                        <th>퍼센트</th>
+                        <th>클래스 이름</th>
+                    </tr>
+                </thead>
+                <tbody id="sequenceDataTable">
+                    <!-- 시퀀스 데이터가 여기에 삽입됩니다 -->
+                </tbody>
+            </table>
+            <button id="logoutButton" class="logout-btn">로그아웃</button>
+        </div>
     </div>
 
     <script>
+        // 로그인 함수
         async function login(username, password) {
             try {
                 const response = await fetch('http://cciicc.cc:7777/auth/login/', {
@@ -46,6 +184,32 @@
             }
         }
 
+        // 회원가입 함수
+        async function register(username, password) {
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('회원가입 실패');
+                }
+
+                const data = await response.json();
+                alert('회원가입이 성공적으로 완료되었습니다. 로그인해주세요.');
+                // 회원가입 후 로그인 폼으로 전환
+                toggleForms();
+            } catch (error) {
+                console.error(error);
+                alert('회원가입에 실패했습니다.');
+            }
+        }
+
+        // 사용자 정보 가져오기 함수
         async function getUser() {
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -74,19 +238,74 @@
             }
         }
 
+        // 사용자 정보를 테이블로 표시하는 함수
         function displayUserInfo(userData) {
-            const userInfoDiv = document.getElementById('userInfo');
-            userInfoDiv.innerHTML = `
-                <h3>사용자 정보</h3>
-                <p><strong>이름:</strong> ${userData.name}</p>
-                <p><strong>이메일:</strong> ${userData.email}</p>
-                <!-- 추가 사용자 정보 표시 가능 -->
-            `;
+            // 로그인 및 회원가입 폼 숨기기
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            // 사용자 정보 섹션 보이기
+            document.getElementById('userInfo').style.display = 'block';
+
+            // 기본 사용자 정보 표시
+            document.getElementById('displayUsername').textContent = userData.username;
+            document.getElementById('displayEmail').textContent = userData.email;
+            document.getElementById('displayDeviceId').textContent = userData.deviceId ? userData.deviceId : '없음';
+
+            // 시퀀스 데이터 표시
+            const sequenceDataTable = document.getElementById('sequenceDataTable');
+            sequenceDataTable.innerHTML = ''; // 기존 내용 초기화
+
+            const sequenceData = userData.sequenceData;
+            for (const [timestamp, data] of Object.entries(sequenceData)) {
+                const row = document.createElement('tr');
+
+                const timestampCell = document.createElement('td');
+                timestampCell.textContent = timestamp;
+                row.appendChild(timestampCell);
+
+                const classIdxCell = document.createElement('td');
+                classIdxCell.textContent = data.class_idx;
+                row.appendChild(classIdxCell);
+
+                const percentCell = document.createElement('td');
+                percentCell.textContent = `${data.percent}%`;
+                row.appendChild(percentCell);
+
+                const classNameCell = document.createElement('td');
+                classNameCell.textContent = data.class_name;
+                row.appendChild(classNameCell);
+
+                sequenceDataTable.appendChild(row);
+            }
         }
 
+        // 로그아웃 함수
+        function logout() {
+            // 토큰 제거
+            localStorage.removeItem('authToken');
+            // 사용자 정보 섹션 숨기기
+            document.getElementById('userInfo').style.display = 'none';
+            // 로그인 폼 보이기
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        // 폼 전환 함수
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+
+        // 로그인 버튼 클릭 이벤트 리스너
         document.getElementById('loginButton').addEventListener('click', async () => {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
 
             if (!username || !password) {
                 alert('사용자 이름과 비밀번호를 입력해주세요.');
@@ -98,6 +317,42 @@
                 await getUser();
             }
         });
+
+        // 회원가입 버튼 클릭 이벤트 리스너
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!username || !password) {
+                alert('사용자 이름과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            await register(username, password);
+        });
+
+        // 로그아웃 버튼 클릭 이벤트 리스너
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            logout();
+        });
+
+        // 회원가입 폼 표시 버튼 클릭 이벤트 리스너
+        document.getElementById('showRegister').addEventListener('click', () => {
+            toggleForms();
+        });
+
+        // 로그인 폼 표시 버튼 클릭 이벤트 리스너
+        document.getElementById('showLogin').addEventListener('click', () => {
+            toggleForms();
+        });
+
+        // 페이지 로드 시 토큰이 있으면 자동으로 사용자 정보 표시
+        window.onload = () => {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                getUser();
+            }
+        };
     </script>
 </body>
 </html>
