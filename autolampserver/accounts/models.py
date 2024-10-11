@@ -7,8 +7,8 @@ class CustomUser(AbstractUser):
     conversationData = models.JSONField(default=dict)
 
     def add_sequence_data(self, timestamp, class_idx, class_name, percent, volume):
-        if not isinstance(class_idx, int) or not isinstance(percent, int) or not isinstance(volume, (int, float)):
-            raise ValueError("class_idx and percent must be integers, and volume must be a number")
+        if not isinstance(class_idx, int) or not isinstance(percent, int) or not isinstance(volume, (float)):
+            raise ValueError("class_idx and percent must be integers, and volume must be a float")
         if not isinstance(class_name, str):
             raise ValueError("class_name must be a string")
         

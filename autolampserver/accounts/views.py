@@ -85,10 +85,10 @@ class AddSequenceDataView(APIView):
         timestamp = request.data.get('datetime')
         class_idx = int(request.data.get('class_idx'))
         class_name = request.data.get('class_name')
-        percent = request.data.get('percent')
-        volume = request.data.get('volume')
+        percent = int(request.data.get('percent'))
+        volume = float(request.data.get('volume'))
 
-        if timestamp and class_idx is not None and percent is not None:
+        if timestamp and class_idx is not None and percent is not None and volume is not None:
             try:
                 request.user.add_sequence_data(timestamp, class_idx, class_name, percent, volume)
                 return Response({"message": "Sequence data added successfully"}, status=status.HTTP_201_CREATED)
