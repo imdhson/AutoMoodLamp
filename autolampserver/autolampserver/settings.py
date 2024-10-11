@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "client",
     "rest_framework",
     'rest_framework.authtoken',
+    'corsheaders',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -44,6 +45,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -132,3 +135,9 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+#CORS settings 
+# 모든 출처 허용 (개발 환경에서만 사용)
+CORS_ALLOW_ALL_ORIGINS = True
+# 추가 설정
+CORS_ALLOW_CREDENTIALS = True

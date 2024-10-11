@@ -10,7 +10,7 @@
 프로젝트 실행을 위해 다음 라이브러리를 설치해야 합니다:
 
 ```bash
-pip install pyaudio tensorflow python-dotenv django djangorestframework requests tensorflow-hub scipy
+pip install pyaudio tensorflow python-dotenv django djangorestframework requests tensorflow-hub scipy django-cors-headers
 ```
 
 ## 개발 중 메모 
