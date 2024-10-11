@@ -48,14 +48,15 @@ try:
 except requests.exceptions.RequestException as e:
     print(f"requests 오류 {e}")
 
-def add_sequence_data_rest(token, timestamp, class_idx, class_name, percent):
+def add_sequence_data_rest(token, timestamp, class_idx, class_name, percent, volume):
     rest_url = os.getenv('SERVER_URL')+"/auth/add-sequence-data/"
     try:
         header = {'Authorization': f'token {token}',}
         payload = {'datetime' : timestamp,
                    'class_idx': class_idx,
                    'class_name': class_name,
-                   'percent': percent,}
+                   'percent': percent,
+                   'volume': volume,}
         response = requests.post(rest_url, data=payload, headers=header)
 
         if response.status_code == 200:
@@ -159,9 +160,9 @@ try:
 
         
         #출력
-        avg_volume = np.frombuffer(data, dtype=np.int16)
+        avg_volume = int(np.average(np.abs(np.frombuffer(data, dtype=np.int16))))
         print(f"{current_time_before} ~ {current_time_after}", end=" | ")
-        print("평균 볼륨: ", int(np.average(np.abs(avg_volume))), end=' | ')
+        print("평균 볼륨: ", avg_volume, end=' | ')
         print(f"대화모드점수:{speech_detect_score:.2f}", end = ' | ')
         print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
         if speech_detect_score >= SPEECH_THRESHOLD:
@@ -177,7 +178,8 @@ try:
         add_sequence_data_rest(token=token, timestamp=current_time_before,
                                 class_idx=top_class_index, 
                                 class_name=top_class, 
-                                percent=top_class_score)
+                                percent=top_class_score,
+                                volume=avg_volume)
 
 except KeyboardInterrupt:
     print("* 녹음 종료")
