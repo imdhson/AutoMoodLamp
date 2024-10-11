@@ -77,19 +77,6 @@ class GetUserView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
-class UpdateDeviceIdView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        device_id = request.data.get('deviceId')
-        if device_id:
-            request.user.deviceId = device_id
-            request.user.save()
-            return Response({"message": "Device ID updated successfully"}, status=status.HTTP_200_OK)
-        return Response({"error": "Device ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-@method_decorator(csrf_exempt, name='dispatch')
 class AddSequenceDataView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -107,7 +94,29 @@ class AddSequenceDataView(APIView):
                 return Response({"message": "Sequence data added successfully"}, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "timestamp, class_idx, class_name, percent, volume are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "datetime, class_idx, class_name, percent, volume are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        sequence_data = request.user.get_sequence_data()
+        return Response(sequence_data, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_exempt, name='dispatch')    
+class AddConversationDataView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        timestamp = request.data.get('datetime')
+        text = request.data.get('text')
+        emotion_score = int(request.data.get('emotion_score'))
+
+        if timestamp and text is not None and emotion_score is not None:
+            try:
+                request.user.add_conversation_data(timestamp, text, emotion_score)
+                return Response({"message": "Conversation data added successfully"}, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "datetime, text, emotion_score are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         sequence_data = request.user.get_sequence_data()
