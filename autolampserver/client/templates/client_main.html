@@ -177,7 +177,7 @@
                 const data = await response.json();
                 // 토큰을 로컬 스토리지에 저장
                 localStorage.setItem('authToken', data.token);
-                return data.token;
+                return data.token; 
             } catch (error) {
                 console.error(error);
                 alert('로그인에 실패했습니다.');

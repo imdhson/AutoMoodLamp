@@ -113,10 +113,12 @@ stream = pyaudio.open(format=FORMAT,
                 frames_per_buffer=CHUNK*SECOND)
 
 print("* 녹음 시작")
-conv_mode_data = None
 
 #대화모드 발화 여부 점수
 speech_detect_score = 0
+
+#대화모드 끊김 감지 시 API로 보낼 데이터
+conv_mode_data = None
 
 try:
     while True:
@@ -135,7 +137,7 @@ try:
         # 리샘플링 계산
         numbers_of_samples = round(len(audio_data_float) * float(16000) / RATE)
         audio_resampled = scipy.signal.resample(audio_data_float, numbers_of_samples)
-        
+
         #YAMNet 모델 예측 by frame 평균 내서 n초동안의 최적 결과만 도출
         scores, embeddings, spectrogram = model(audio_resampled)
         scores = scores.numpy()
@@ -163,9 +165,10 @@ try:
         print(f"대화모드점수:{speech_detect_score:.2f}", end = ' | ')
         print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
         if speech_detect_score >= SPEECH_THRESHOLD:
-            conv_mode_data.append(data)
             print(f"[대화모드]", end = '')
+            # conv_mode_data.append(data)
         elif conv_mode_data != None and speech_detect_score >= SPEECH_THRESHOLD:
+            #이곳에 Azure STT API 넣기
             conv_mode_data = None
             # pplx
         print()

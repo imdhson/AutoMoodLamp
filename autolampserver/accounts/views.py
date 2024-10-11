@@ -99,14 +99,15 @@ class AddSequenceDataView(APIView):
         class_idx = int(request.data.get('class_idx'))
         class_name = request.data.get('class_name')
         percent = int(request.data.get('percent'))
+        volume = int(request.data.get('volume'))
 
         if timestamp and class_idx is not None and percent is not None:
             try:
-                request.user.add_sequence_data(timestamp, class_idx, class_name, percent)
+                request.user.add_sequence_data(timestamp, class_idx, class_name, percent, volume)
                 return Response({"message": "Sequence data added successfully"}, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "timestamp, class_idx, class_name, and percent are required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "timestamp, class_idx, class_name, percent, volume are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         sequence_data = request.user.get_sequence_data()
