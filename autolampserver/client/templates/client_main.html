@@ -148,6 +148,7 @@
                         <th>클래스 인덱스</th>
                         <th>퍼센트</th>
                         <th>클래스 이름</th>
+                        <th>볼륨</th>
                     </tr>
                 </thead>
                 <tbody id="sequenceDataTable">
@@ -274,6 +275,10 @@
                 const classNameCell = document.createElement('td');
                 classNameCell.textContent = data.class_name;
                 row.appendChild(classNameCell);
+
+                const volumeCell = document.createElement('td');
+                volumeCell.textContent = data.volume ? data.volume : 'N/A'; // volume 정보가 없을 경우 'N/A' 표시
+                row.appendChild(volumeCell);
 
                 sequenceDataTable.appendChild(row);
             }

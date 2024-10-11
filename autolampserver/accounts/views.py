@@ -85,8 +85,8 @@ class AddSequenceDataView(APIView):
         timestamp = request.data.get('datetime')
         class_idx = int(request.data.get('class_idx'))
         class_name = request.data.get('class_name')
-        percent = int(request.data.get('percent'))
-        volume = int(request.data.get('volume'))
+        percent = request.data.get('percent')
+        volume = request.data.get('volume')
 
         if timestamp and class_idx is not None and percent is not None:
             try:

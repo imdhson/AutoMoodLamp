@@ -158,9 +158,20 @@ try:
         elif not is_conversation(top_class_index) and speech_detect_score > -1:
             speech_detect_score -= sigmoid(average_scores[top_class_index])
 
+        #평균 볼륨 계산
+        # 데이터를 16비트 정수 배열로 변환
+        audio_array = np.frombuffer(data, dtype=np.int16)
+
+        # RMS(Root Mean Square) 값 계산
+        rms = np.sqrt(np.mean(np.square(audio_array.astype(np.float32))))
+
+        # RMS를 데시벨(dB)로 변환
+        if rms > 0:
+            avg_volume = 20 * np.log10(rms / 32767)  # 32767은 16비트 오디오의 최대값
+        else:
+            avg_volume = -96  # 무음에 가까운 매우 낮은 dB 값
         
         #출력
-        avg_volume = int(np.average(np.abs(np.frombuffer(data, dtype=np.int16))))
         print(f"{current_time_before} ~ {current_time_after}", end=" | ")
         print("평균 볼륨: ", avg_volume, end=' | ')
         print(f"대화모드점수:{speech_detect_score:.2f}", end = ' | ')

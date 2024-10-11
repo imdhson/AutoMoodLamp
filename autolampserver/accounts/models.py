@@ -3,7 +3,6 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 class CustomUser(AbstractUser):
-    deviceId = models.CharField(max_length=255, blank=True, null=True)
     sequenceData = models.JSONField(default=dict)
     conversationData = models.JSONField(default=dict)
 
