@@ -161,15 +161,11 @@ try:
         #평균 볼륨 계산
         # 데이터를 16비트 정수 배열로 변환
         audio_array = np.frombuffer(data, dtype=np.int16)
-
         # RMS(Root Mean Square) 값 계산
         rms = np.sqrt(np.mean(np.square(audio_array.astype(np.float32))))
-
         # RMS를 데시벨(dB)로 변환
-        if rms > 0:
-            avg_volume = 20 * np.log10(rms / 32767)  # 32767은 16비트 오디오의 최대값
-        else:
-            avg_volume = -96  # 무음에 가까운 매우 낮은 dB 값
+        avg_volume = 20 * np.log10(rms)
+        avg_volume = round(avg_volume, 2)
         
         #출력
         print(f"{current_time_before} ~ {current_time_after}", end=" | ")
