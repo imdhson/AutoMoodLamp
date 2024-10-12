@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    
     <meta charset="UTF-8">
     <title>SPA API 로그인 및 회원가입 예제</title>
     <style>
@@ -97,6 +98,7 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -148,18 +150,31 @@
                         <th>클래스 인덱스</th>
                         <th>퍼센트</th>
                         <th>클래스 이름</th>
-                        <th>볼륨</th>
+                        <th>볼륨(dB)</th>
                     </tr>
                 </thead>
                 <tbody id="sequenceDataTable">
                     <!-- 시퀀스 데이터가 여기에 삽입됩니다 -->
                 </tbody>
             </table>
+
+            <h3>시퀀스 데이터 그래프</h3>
+            <canvas id="sequenceChart"></canvas>
+            
+
             <button id="logoutButton" class="logout-btn">로그아웃</button>
         </div>
     </div>
 
     <script>
+        // 타임스탬프에서 시간, 분, 초만 추출하는 함수
+        function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+        }
         // 로그인 함수
         async function login(username, password) {
             try {
@@ -251,39 +266,117 @@
             document.getElementById('displayUsername').textContent = userData.username;
             document.getElementById('displayEmail').textContent = userData.email;
             document.getElementById('displayDeviceId').textContent = userData.deviceId ? userData.deviceId : '없음';
+                // 시퀀스 데이터 표시
+                const sequenceDataTable = document.getElementById('sequenceDataTable');
+                sequenceDataTable.innerHTML = ''; // 기존 내용 초기화
 
-            // 시퀀스 데이터 표시
-            const sequenceDataTable = document.getElementById('sequenceDataTable');
-            sequenceDataTable.innerHTML = ''; // 기존 내용 초기화
+                const sequenceData = userData.sequenceData;
+                const timestamps = [];
+                const volumes = [];
+                const tooltipInfo = []; // 툴팁에 표시할 추가 정보 (퍼센트, 클래스 이름)
 
-            const sequenceData = userData.sequenceData;
-            for (const [timestamp, data] of Object.entries(sequenceData)) {
-                const row = document.createElement('tr');
+                // 시퀀스 데이터의 마지막 20개의 항목만 가져오기
+                const entries = Object.entries(sequenceData);
+                const last20Entries = entries.slice(-20); // 마지막 20개의 항목
+                
+                for (const [timestamp, data] of last20Entries) {
+                    const row = document.createElement('tr');
 
-                const timestampCell = document.createElement('td');
-                timestampCell.textContent = timestamp;
-                row.appendChild(timestampCell);
+                    const timestampCell = document.createElement('td');
+                    timestampCell.textContent = formatTimestamp(timestamp);
+                    row.appendChild(timestampCell);
 
-                const classIdxCell = document.createElement('td');
-                classIdxCell.textContent = data.class_idx;
-                row.appendChild(classIdxCell);
+                    const classIdxCell = document.createElement('td');
+                    classIdxCell.textContent = data.class_idx;
+                    row.appendChild(classIdxCell);
 
-                const percentCell = document.createElement('td');
-                percentCell.textContent = `${data.percent}%`;
-                row.appendChild(percentCell);
+                    const percentCell = document.createElement('td');
+                    percentCell.textContent = `${data.percent}%`;
+                    row.appendChild(percentCell);
 
-                const classNameCell = document.createElement('td');
-                classNameCell.textContent = data.class_name;
-                row.appendChild(classNameCell);
+                    const classNameCell = document.createElement('td');
+                    classNameCell.textContent = data.class_name;
+                    row.appendChild(classNameCell);
 
-                const volumeCell = document.createElement('td');
-                volumeCell.textContent = data.volume ? data.volume : 'N/A'; // volume 정보가 없을 경우 'N/A' 표시
-                row.appendChild(volumeCell);
+                    const volumeCell = document.createElement('td');
+                    volumeCell.textContent = data.volume ? data.volume : 'N/A';
+                    row.appendChild(volumeCell);
 
-                sequenceDataTable.appendChild(row);
+                    sequenceDataTable.appendChild(row);
+
+                    // 차트용 데이터 추가
+                    timestamps.push(formatTimestamp(timestamp));   // 타임스탬프 (X축)
+                    volumes.push(data.volume ? data.volume : 0);   // 볼륨 데이터 (Y축)
+
+                    // 툴팁에 표시할 정보 추가
+                    tooltipInfo.push({
+                        className: data.class_name,
+                        percent: data.percent,
+                    });
+                }
+
+                
+                const maxDataPoints = 20;
+                const limitedTimestamps = timestamps.slice(-maxDataPoints); // 마지막 20개 타임스탬프 가져오기
+                const limitedVolumes = volumes.slice(-maxDataPoints); // 마지막 20개 볼륨 데이터 가져오기
+                const limitedTooltipInfo = tooltipInfo.slice(-maxDataPoints); // 마지막 20개의 툴팁 데이터 가져오기
+
+                // Chart.js를 사용해 그래프 생성
+                const ctx = document.getElementById('sequenceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: limitedTimestamps, // X축: 타임스탬프
+                        datasets: [{
+                            label: '데시벨 (dB)',
+                            data: limitedVolumes, // Y축: 볼륨 데이터
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: '데시벨 (dB)' // Y축 제목
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: '타임스탬프 (시:분:초)' // X축 제목
+                                }
+                            }
+                        },
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const index = context.dataIndex; // 현재 데이터 포인트의 인덱스
+                                        const volume = context.raw; // Y축 데이터 (데시벨)
+                                        const percent = tooltipInfo[index].percent; // 추가 정보
+                                        const className = tooltipInfo[index].className; // 추가 정보
+                                        const volumeInfo = tooltipInfo[index].volume ? tooltipInfo[index].volume : 'N/A'; // 추가 정보
+
+                                        return [
+                                            `클래스 이름: ${className}`,// 줄 1
+                                            `정확도: ${percent}%`,     // 줄 2
+                                            `볼륨: ${volume} dB`,  // 줄 3
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             }
-        }
-
         // 로그아웃 함수
         function logout() {
             // 토큰 제거
