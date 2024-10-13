@@ -29,7 +29,7 @@ class CustomUser(AbstractUser):
         
         self.conversationData[timestamp] = {
             "text": text,
-            "emotionScore": emotion_score
+            "emotion_score": emotion_score
         }
         self.save()
 

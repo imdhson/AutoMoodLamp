@@ -33,8 +33,8 @@ def add_conversation_data_rest(token, timestamp, text, emotion_score):
     try:
         header = {'Authorization': f'token {token}',}
         payload = {'datetime' : timestamp,
-                   'percent': text,
-                   'volume': emotion_score,}
+                   'text': text,
+                   'emotion_score': emotion_score,}
         response = requests.post(rest_url, data=payload, headers=header)
 
         if response.status_code == 200:

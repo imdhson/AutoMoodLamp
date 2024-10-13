@@ -138,7 +138,7 @@ try:
             wavfile.write("api_audio.wav", RATE, conv_mode_data_s)
             print("\napi_audio.wav 저장완료. Azure STT 활용 시작")
 
-            #이곳에 Azure STT API 넣기
+            #이곳에 Azure STT API 넣기 
             thread = threading.Thread(target=wav_to_text_to_pplx, args=(token, current_time_before))
             thread.daemon=True
             thread.start()
