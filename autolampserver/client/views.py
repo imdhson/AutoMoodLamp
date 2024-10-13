@@ -7,3 +7,6 @@ def client_main_view(request):
     # 받아와서 context에 넣어서 client_main.html에서 적절하게 화면에 표시
     context = {}
     return render(request, 'client_main.html', context)
+
+def client_conv_view(request):
+    return render(request, "client_conv.html")

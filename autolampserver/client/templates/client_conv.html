@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    
+    <meta charset="UTF-8">
+    <title>적응형 무드 램프 Control Center</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f4f4f4;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background-color: #fff; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            width: 100%; 
+            padding: 10px; 
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover { 
+            background-color: #218838;
+        }
+        #userInfo { 
+            margin-top: 20px; 
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .toggle-form {
+            width: 48%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .toggle-form:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        @media (max-width: 500px) {
+            .toggle-form {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 로그인 폼 -->
+        <div id="loginForm">
+            <h2>로그인</h2>
+            <input type="text" id="loginUsername" placeholder="사용자 이름" required />
+            <input type="password" id="loginPassword" placeholder="비밀번호" required />
+            <button id="loginButton">로그인</button>
+            <div class="button-group">
+                <button id="showRegister" class="toggle-form">회원가입</button>
+            </div>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div id="registerForm" class="hidden">
+            <h2>회원가입</h2>
+            <input type="text" id="registerUsername" placeholder="사용자 이름" required />
+            <input type="password" id="registerPassword" placeholder="비밀번호" required />
+            <button id="registerButton">회원가입</button>
+            <div class="button-group">
+                <button id="showLogin" class="toggle-form">로그인</button>
+            </div>
+        </div>
+
+        <!-- 사용자 정보 표시 섹션 -->
+        <div id="userInfo">
+            <h3>사용자 정보</h3>
+            <table>
+                <tr>
+                    <th>사용자 이름</th>
+                    <td id="displayUsername"></td>
+                </tr>
+                <tr>
+                    <th>이메일</th>
+                    <td id="displayEmail"></td>
+                </tr>
+                <tr>
+                    <th>디바이스 ID</th>
+                    <td id="displayDeviceId"></td>
+                </tr>
+            </table>
+
+            <h3>시퀀스 데이터</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>타임스탬프</th>
+                        <th>클래스 인덱스</th>
+                        <th>퍼센트</th>
+                        <th>클래스 이름</th>
+                        <th>볼륨(dB)</th>
+                    </tr>
+                </thead>
+                <tbody id="sequenceDataTable">
+                    <!-- 시퀀스 데이터가 여기에 삽입됩니다 -->
+                </tbody>
+            </table>
+
+            <h3>시퀀스 데이터 그래프</h3>
+            <canvas id="sequenceChart"></canvas>
+
+            <h3>대화 데이터</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>타임스탬프</th>
+                        <th>텍스트</th>
+                        <th>감정 점수</th>
+                    </tr>
+                </thead>
+                <tbody id="conversationDataTable">
+                    <!-- 대화 데이터가 여기에 삽입됩니다 -->
+                </tbody>
+            </table>
+
+            <h3>대화 데이터 그래프</h3>
+            <canvas id="conversationChart"></canvas>
+
+            <button id="logoutButton" class="logout-btn">로그아웃</button>
+        </div>
+    </div>
+
+    <script>
+        // 타임스탬프에서 시간, 분, 초만 추출하는 함수
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 로그인 함수
+        async function login(username, password) {
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('로그인 실패');
+                }
+
+                const data = await response.json();
+                // 토큰을 로컬 스토리지에 저장
+                localStorage.setItem('authToken', data.token);
+                return data.token; 
+            } catch (error) {
+                console.error(error);
+                alert('로그인에 실패했습니다.');
+            }
+        }
+
+        // 회원가입 함수
+        async function register(username, password) {
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error('회원가입 실패');
+                }
+
+                const data = await response.json();
+                alert('회원가입이 성공적으로 완료되었습니다. 로그인해주세요.');
+                // 회원가입 후 로그인 폼으로 전환
+                toggleForms();
+            } catch (error) {
+                console.error(error);
+                alert('회원가입에 실패했습니다.');
+            }
+        }
+
+        // 사용자 정보 가져오기 함수
+        async function getUser() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://cciicc.cc:7777/auth/get-user/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('사용자 정보 가져오기 실패');
+                }
+
+                const userData = await response.json();
+                console.log('사용자 정보:', userData);
+                displayUserInfo(userData);
+            } catch (error) {
+                console.error(error);
+                alert('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 사용자 정보를 테이블로 표시하는 함수
+        function displayUserInfo(userData) {
+            // 로그인 및 회원가입 폼 숨기기
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            // 사용자 정보 섹션 보이기
+            document.getElementById('userInfo').style.display = 'block';
+
+            // 기본 사용자 정보 표시
+            document.getElementById('displayUsername').textContent = userData.username;
+            document.getElementById('displayEmail').textContent = userData.email;
+            document.getElementById('displayDeviceId').textContent = userData.deviceId ? userData.deviceId : '없음';
+
+            // 시퀀스 데이터 표시
+            const sequenceDataTable = document.getElementById('sequenceDataTable');
+            sequenceDataTable.innerHTML = ''; // 기존 내용 초기화
+
+            const sequenceData = userData.sequenceData;
+            const timestampsSeq = [];
+            const volumes = [];
+            const tooltipInfoSeq = []; // 툴팁에 표시할 추가 정보 (퍼센트, 클래스 이름)
+
+            // 시퀀스 데이터의 마지막 20개의 항목만 가져오기
+            const entriesSeq = Object.entries(sequenceData);
+            const last20EntriesSeq = entriesSeq.slice(-20); // 마지막 20개의 항목
+            
+            for (const [timestamp, data] of last20EntriesSeq) {
+                const row = document.createElement('tr');
+
+                const timestampCell = document.createElement('td');
+                timestampCell.textContent = formatTimestamp(timestamp);
+                row.appendChild(timestampCell);
+
+                const classIdxCell = document.createElement('td');
+                classIdxCell.textContent = data.class_idx;
+                row.appendChild(classIdxCell);
+
+                const percentCell = document.createElement('td');
+                percentCell.textContent = `${data.percent}%`;
+                row.appendChild(percentCell);
+
+                const classNameCell = document.createElement('td');
+                classNameCell.textContent = data.class_name;
+                row.appendChild(classNameCell);
+
+                const volumeCell = document.createElement('td');
+                volumeCell.textContent = data.volume ? data.volume : 'N/A';
+                row.appendChild(volumeCell);
+
+                sequenceDataTable.appendChild(row);
+
+                // 차트용 데이터 추가
+                timestampsSeq.push(formatTimestamp(timestamp));   // 타임스탬프 (X축)
+                volumes.push(data.volume ? data.volume : 0);   // 볼륨 데이터 (Y축)
+
+                // 툴팁에 표시할 정보 추가
+                tooltipInfoSeq.push({
+                    className: data.class_name,
+                    percent: data.percent,
+                });
+            }
+
+            const maxDataPointsSeq = 20;
+            const limitedTimestampsSeq = timestampsSeq.slice(-maxDataPointsSeq); // 마지막 20개 타임스탬프 가져오기
+            const limitedVolumes = volumes.slice(-maxDataPointsSeq); // 마지막 20개 볼륨 데이터 가져오기
+            const limitedTooltipInfoSeq = tooltipInfoSeq.slice(-maxDataPointsSeq); // 마지막 20개의 툴팁 데이터 가져오기
+
+            // Chart.js를 사용해 시퀀스 그래프 생성
+            const ctxSeq = document.getElementById('sequenceChart').getContext('2d');
+            new Chart(ctxSeq, {
+                type: 'line',
+                data: {
+                    labels: limitedTimestampsSeq, // X축: 타임스탬프
+                    datasets: [{
+                        label: '데시벨 (dB)',
+                        data: limitedVolumes, // Y축: 볼륨 데이터
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '데시벨 (dB)' // Y축 제목
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '타임스탬프 (시:분:초)' // X축 제목
+                            }
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex; // 현재 데이터 포인트의 인덱스
+                                    const volume = context.raw; // Y축 데이터 (데시벨)
+                                    const percent = tooltipInfoSeq[index].percent; // 추가 정보
+                                    const className = tooltipInfoSeq[index].className; // 추가 정보
+
+                                    return [
+                                        `클래스 이름: ${className}`,// 줄 1
+                                        `정확도: ${percent}%`,     // 줄 2
+                                        `볼륨: ${volume} dB`,  // 줄 3
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 대화 데이터 표시
+            const conversationDataTable = document.getElementById('conversationDataTable');
+            conversationDataTable.innerHTML = ''; // 기존 내용 초기화
+
+            const conversationData = userData.conversationData;
+            const timestampsConv = [];
+            const emotionScores = [];
+
+            // 대화 데이터의 마지막 20개의 항목만 가져오기
+            const entriesConv = Object.entries(conversationData);
+            const last20EntriesConv = entriesConv.slice(-20); // 마지막 20개의 항목
+            
+            for (const [timestamp, data] of last20EntriesConv) {
+                const row = document.createElement('tr');
+
+                const timestampCell = document.createElement('td');
+                timestampCell.textContent = formatTimestamp(timestamp);
+                row.appendChild(timestampCell);
+
+                const textCell = document.createElement('td');
+                textCell.textContent = data.text;
+                row.appendChild(textCell);
+
+                const emotionScoreCell = document.createElement('td');
+                emotionScoreCell.textContent = data.emotionScore;
+                row.appendChild(emotionScoreCell);
+
+                conversationDataTable.appendChild(row);
+
+                // 차트용 데이터 추가
+                timestampsConv.push(formatTimestamp(timestamp));   // 타임스탬프 (X축)
+                emotionScores.push(parseFloat(data.emotionScore)); // 감정 점수 데이터 (Y축)
+            }
+
+            const maxDataPointsConv = 20;
+            const limitedTimestampsConv = timestampsConv.slice(-maxDataPointsConv); // 마지막 20개 타임스탬프 가져오기
+            const limitedEmotionScores = emotionScores.slice(-maxDataPointsConv); // 마지막 20개 감정 점수 데이터 가져오기
+
+            // Chart.js를 사용해 대화 그래프 생성
+            const ctxConv = document.getElementById('conversationChart').getContext('2d');
+            new Chart(ctxConv, {
+                type: 'line',
+                data: {
+                    labels: limitedTimestampsConv, // X축: 타임스탬프
+                    datasets: [{
+                        label: '감정 점수',
+                        data: limitedEmotionScores, // Y축: 감정 점수 데이터
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '감정 점수' // Y축 제목
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '타임스탬프 (시:분:초)' // X축 제목
+                            }
+                        }
+                    },
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex; // 현재 데이터 포인트의 인덱스
+                                    const emotionScore = context.raw; // Y축 데이터 (감정 점수)
+                                    const text = last20EntriesConv[index][1].text; // 대화 텍스트
+
+                                    return [
+                                        `텍스트: ${text}`,
+                                        `감정 점수: ${emotionScore}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 로그아웃 함수
+        function logout() {
+            // 토큰 제거
+            localStorage.removeItem('authToken');
+            // 사용자 정보 섹션 숨기기
+            document.getElementById('userInfo').style.display = 'none';
+            // 로그인 폼 보이기
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        // 폼 전환 함수
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+
+        // 로그인 버튼 클릭 이벤트 리스너
+        document.getElementById('loginButton').addEventListener('click', async () => {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('사용자 이름과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            const token = await login(username, password);
+            if (token) {
+                await getUser();
+            }
+        });
+
+        // 회원가입 버튼 클릭 이벤트 리스너
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!username || !password) {
+                alert('사용자 이름과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            await register(username, password);
+        });
+
+        // 로그아웃 버튼 클릭 이벤트 리스너
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            logout();
+        });
+
+        // 회원가입 폼 표시 버튼 클릭 이벤트 리스너
+        document.getElementById('showRegister').addEventListener('click', () => {
+            toggleForms();
+        });
+
+        // 로그인 폼 표시 버튼 클릭 이벤트 리스너
+        document.getElementById('showLogin').addEventListener('click', () => {
+            toggleForms();
+        });
+
+        // 페이지 로드 시 토큰이 있으면 자동으로 사용자 정보 표시
+        window.onload = () => {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                getUser();
+            }
+        };
+    </script>
+</body>
+</html>

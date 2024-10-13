@@ -108,7 +108,7 @@ class AddConversationDataView(APIView):
     def post(self, request):
         timestamp = request.data.get('datetime')
         text = request.data.get('text')
-        emotion_score = int(request.data.get('emotion_score'))
+        emotion_score = request.data.get('emotion_score')
 
         if timestamp and text is not None and emotion_score is not None:
             try:

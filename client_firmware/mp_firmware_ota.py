@@ -5,6 +5,7 @@
 # %%
 import pyaudio
 import numpy as np
+import threading
 import tensorflow as tf
 import tensorflow_hub as hub
 from datetime import datetime
@@ -135,13 +136,15 @@ try:
         elif conv_mode_bool and speech_detect_score <= SPEECH_THRESHOLD:
             conv_mode_data_s = np.concatenate(conv_mode_data)
             wavfile.write("api_audio.wav", RATE, conv_mode_data_s)
-            print("api_audio.wav 저장완료. Azure STT 활용 시작")
+            print("\napi_audio.wav 저장완료. Azure STT 활용 시작")
 
             #이곳에 Azure STT API 넣기
-            stt_text = recognize_from_file()
+            thread = threading.Thread(target=wav_to_text_to_pplx, args=(token, current_time_before))
+            thread.daemon=True
+            thread.start()
             conv_mode_data = []
             conv_mode_bool = False
-            # pplx API로 감정 분석 질의 시작
+            
         print()
         #매 3초마다 결과 나오면 server/accounts/add-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
         # 서버의 로그인중인 계정(token)에 업로드

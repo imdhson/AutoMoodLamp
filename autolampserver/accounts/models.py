@@ -24,7 +24,7 @@ class CustomUser(AbstractUser):
         return self.sequenceData
 
     def add_conversation_data(self, timestamp, text, emotion_score):
-        if not isinstance(timestamp, str) or not isinstance(text, str) or not isinstance(emotion_score, (int, float)):
+        if not isinstance(timestamp, str) or not isinstance(text, str) or not isinstance(emotion_score, str):
             raise ValidationError("Invalid data types for conversation data")
         
         self.conversationData[timestamp] = {

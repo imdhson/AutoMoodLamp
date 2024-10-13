@@ -2,6 +2,8 @@ import azure.cognitiveservices.speech as speechsdk
 import time
 import os
 from dotenv import load_dotenv
+import json
+from modules.rest import *
 
 load_dotenv()
 
@@ -9,7 +11,7 @@ load_dotenv()
 speech_key = os.getenv("AZURE_API")
 service_region = os.getenv("AZURE_API_LOC")
 
-def recognize_from_file():
+def wav_to_text_to_pplx(token, current_time_before):
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.speech_recognition_language = "ko-KR"
     audio_config = speechsdk.audio.AudioConfig(filename="api_audio.wav")
@@ -42,9 +44,55 @@ def recognize_from_file():
         time.sleep(.5)
 
     speech_recognizer.stop_continuous_recognition()
-
-    print("\n인식 결과:")
     result = '\n'.join(all_results)
-    return result
+    llm_score = pplx_api_req(result=result)
+    
+    # 이곳에 db에 업로드
+    add_conversation_data_rest(token, current_time_before, result, llm_score)
 
-print(recognize_from_file())
+def pplx_api_req(result):
+    #PPLX API
+    PPLX_API = os.getenv("PPLX_API")
+    PPLX_API_URL = os.getenv("PPLX_API_URL")
+    payload = {
+        "model": "llama-3.1-sonar-small-128k-online",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You have to analyze your emotions and answer them. Analyze your emotions and rate them from 0 to 10. The lower the number, the worse it feels, and 10 is the best thing to feel. Please answer with only one number. Do not answer anything other than a number."
+            },
+            {
+                "role": "user",
+                "content": result
+            }
+        ],
+        # "max_tokens": "Optional",
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "return_citations": False,
+        "search_domain_filter": [],
+        "return_images": False,
+        "return_related_questions": False,
+        "search_recency_filter": "month",
+        "top_k": 0,
+        "stream": False,
+        "presence_penalty": 0,
+        "frequency_penalty": 1
+    }
+    headers = {
+        # "Authorization": "Bearer <token>",
+        "Authorization": "Bearer "+PPLX_API,
+        "Content-Type": "application/json"
+    }
+
+    response = requests.request("POST", PPLX_API_URL, json=payload, headers=headers)
+    response_dict = json.loads(response.text)
+    # print(response_dict)
+    try:
+        print(response_dict['choices'][0]['message']['content'])
+    except KeyError:
+        print(response_dict)
+
+
+if __name__ == "__main__":
+    print(wav_to_text_to_pplx())
