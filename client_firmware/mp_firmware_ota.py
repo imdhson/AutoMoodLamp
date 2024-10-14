@@ -22,7 +22,6 @@ import time
 
 import board
 import neopixel
-from modules.neopixel import *
 
 def wheel(pos):
     # 0에서 255 사이의 값을 입력하여 색상 값을 얻습니다.
