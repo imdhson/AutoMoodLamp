@@ -63,11 +63,11 @@ pixels = neopixel.NeoPixel(
 )
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 # 오디오 설정
-CHUNK = 24000  # 한번에 처리할 오디오 수
-SECOND = 6
+SECOND = 3
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 48000
+CHUNK = RATE // 10  # 한번에 처리할 오디오 수
 
 #대화모드 설정 0.x~...
 SPEECH_THRESHOLD = 0.5
@@ -110,7 +110,7 @@ stream = pyaudio.open(format=FORMAT,
                 channels=CHANNELS,
                 rate=RATE,
                 input=True,
-                frames_per_buffer=CHUNK*SECOND)
+                frames_per_buffer=CHUNK)
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 print("* 녹음 시작")
 
@@ -124,7 +124,7 @@ try:
     while True:
         # 오디오 데이터 읽기
         current_time_before = datetime.now().isoformat()
-        data = stream.read(CHUNK*SECOND)
+        data = stream.read(CHUNK*10 *SECOND)
         current_time_after = datetime.now().isoformat()
 
         #YamNet을 위한 변환
