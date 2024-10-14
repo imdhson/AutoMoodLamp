@@ -11,7 +11,7 @@ import neopixel
 pixel_pin = board.D18
 
 # NeoPixels의 개수
-num_pixels = 30
+num_pixels = 8
 
 # 픽셀 색상의 순서 - RGB 또는 GRB. 일부 NeoPixels에는 빨간색과 녹색이 반대로 되어 있습니다!
 # RGBW NeoPixels의 경우 ORDER를 RGBW 또는 GRBW로 변경합니다.

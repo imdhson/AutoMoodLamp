@@ -106,6 +106,7 @@ class AddConversationDataView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        print("REQ::::" ,request.data)
         timestamp = request.data.get('datetime')
         text = request.data.get('text')
         emotion_score = request.data.get('emotion_score')

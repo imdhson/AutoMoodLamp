@@ -42,7 +42,7 @@ def add_conversation_data_rest(token, timestamp, text, emotion_score):
             if message:
                 print(f"{message}")
             else:
-                print("add sequence 에러!")
+                print("add conversation 에러!")
         else:
             print(f": HTTP 상태 코드 {response.status_code}")
             print(f"{response.text}")

@@ -417,14 +417,13 @@
                 row.appendChild(textCell);
 
                 const emotionScoreCell = document.createElement('td');
-                emotionScoreCell.textContent = data.emotionScore;
+                emotionScoreCell.textContent = data.emotion_score;
                 row.appendChild(emotionScoreCell);
-
                 conversationDataTable.appendChild(row);
 
                 // 차트용 데이터 추가
                 timestampsConv.push(formatTimestamp(timestamp));   // 타임스탬프 (X축)
-                emotionScores.push(parseFloat(data.emotionScore)); // 감정 점수 데이터 (Y축)
+                emotionScores.push(parseFloat(data.emotion_score)); // 감정 점수 데이터 (Y축)
             }
 
             const maxDataPointsConv = 20;
