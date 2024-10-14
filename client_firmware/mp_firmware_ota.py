@@ -61,7 +61,7 @@ ORDER = neopixel.GRB
 pixels = neopixel.NeoPixel(
     pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
 )
-rainbow_cycle(0.0001)  # 1ms 지연으로 무지개 순환
+rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 # 오디오 설정
 CHUNK = 48000  # 한번에 처리할 오디오 수
 SECOND = 3
@@ -93,7 +93,7 @@ try:
 except requests.exceptions.RequestException as e:
     print(f"requests 오류 {e}")
      
-
+rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 # YAMNet 모델 로드
 model = tf.saved_model.load('client_firmware/yamnetModel')
 #오류시 Current working directory 확인
@@ -111,7 +111,7 @@ stream = pyaudio.open(format=FORMAT,
                 rate=RATE,
                 input=True,
                 frames_per_buffer=CHUNK*SECOND)
-
+rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 print("* 녹음 시작")
 
 #대화모드 발화 여부 점수
