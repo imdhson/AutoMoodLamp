@@ -21,7 +21,7 @@ pixels = neopixel.NeoPixel(
     pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
 )
 
-
+rainbow_cycle(0.0001)  # 1ms 지연으로 무지개 순환
 def wheel(pos):
     # 0에서 255 사이의 값을 입력하여 색상 값을 얻습니다.
     # 색상은 r - g - b - 다시 r로 전환됩니다.
@@ -52,27 +52,3 @@ def rainbow_cycle(wait):
         pixels.show()
         time.sleep(wait)
 
-
-while True:
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 처리합니다.
-    pixels.fill((255, 0, 0))
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 해제합니다.
-    # pixels.fill((255, 0, 0, 0))
-    pixels.show()
-    time.sleep(1)
-
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 처리합니다.
-    pixels.fill((0, 255, 0))
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 해제합니다.
-    # pixels.fill((0, 255, 0, 0))
-    pixels.show()
-    time.sleep(1)
-
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 처리합니다.
-    pixels.fill((0, 0, 255))
-    # RGBW/GRBW NeoPixels이 있는 경우 이 줄을 주석 해제합니다.
-    # pixels.fill((0, 0, 255, 0))
-    pixels.show()
-    time.sleep(1)
-
-    rainbow_cycle(0.001)  # 1ms 지연으로 무지개 순환

@@ -59,7 +59,7 @@ def pplx_api_req(result):
         "messages": [
             {
                 "role": "system",
-                "content": "You have to analyze your emotions and answer them. Analyze your emotions and rate them from 0 to 10. The lower the number, the worse it feels, and 10 is the best thing to feel. Please answer with only one number. Do not answer anything other than a number. 그리고 한국어로 답변해주세요. 또 다시 요청드리지만 '평가 점수 (0~10) 평가 코멘트' 형식으로 응답해주세요."
+                "content": "You have to analyze your emotions and answer them. Analyze your emotions and rate them from 0 to 10. The lower the number, the worse it feels, and 10 is the best thing to feel. Please answer with only one number. Do not answer anything other than a number."
             },
             {
                 "role": "user",

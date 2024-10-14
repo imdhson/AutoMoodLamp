@@ -1,5 +1,7 @@
 #!/bin/bash
  cd /home/imdhson/servers/AutoMoodLamp/ ;
  source .venv/bin/activate
- python client_firmware/booting/updateService.py
- python mp_firmware.py
+ cd client_firmware/ ;
+ python booting/updateService.py
+ cd /home/imdhson/servers/AutoMoodLamp/ ;
+ python client_firmware/mp_firmware.py
