@@ -67,7 +67,7 @@ SECOND = 3
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 48000
-CHUNK = RATE // 10  # 한번에 처리할 오디오 수
+CHUNK = RATE // 20  # 한번에 처리할 오디오 수
 
 #대화모드 설정 0.x~...
 SPEECH_THRESHOLD = 0.5
@@ -122,10 +122,14 @@ conv_mode_data = []
 conv_mode_bool = False
 try:
     while True:
-        # 오디오 데이터 읽기
-        current_time_before = datetime.now().isoformat()
-        data = stream.read(CHUNK*10 *SECOND)
-        current_time_after = datetime.now().isoformat()
+        try:
+            # 오디오 데이터 읽기
+            current_time_before = datetime.now().isoformat()
+            data = b''.join([stream.read(CHUNK) for _ in range(20 * SECOND)])
+            current_time_after = datetime.now().isoformat()
+        except OSError as e:
+            print(f"오디오 입력 오류 ㅏㄹ생: {e}")
+            continue
 
         #YamNet을 위한 변환
         # 바이트 데이터를 16비트 정수 배열로 변환
