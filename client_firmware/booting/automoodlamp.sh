@@ -4,4 +4,4 @@
  cd client_firmware/ ;
  python booting/updateService.py
  cd /home/imdhson/servers/AutoMoodLamp/ ;
- python client_firmware/mp_firmware.py
+ sudo python client_firmware/mp_firmware.py
