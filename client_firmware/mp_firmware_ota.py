@@ -63,8 +63,8 @@ pixels = neopixel.NeoPixel(
 )
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 # 오디오 설정
-CHUNK = 48000  # 한번에 처리할 오디오 수
-SECOND = 3
+CHUNK = 24000  # 한번에 처리할 오디오 수
+SECOND = 6
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 48000
