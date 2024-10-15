@@ -1,10 +1,10 @@
 import numpy as np
 import scipy
 from scipy.io import wavfile
-from classification import *
-from rest import *
-from azure_stt import *
-from CacheManager import *
+from modules.classification import *
+from modules.rest import *
+from modules.azure_stt import *
+from modules.CacheManager import *
 
 def audio_processing(data, current_time_before):
     single_ton = CacheManager()
