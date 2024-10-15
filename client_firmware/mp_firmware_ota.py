@@ -20,6 +20,8 @@ import time
 import board
 import neopixel
 
+single_ton = CacheManager()
+
 def wheel(pos):
     # 0에서 255 사이의 값을 입력하여 색상 값을 얻습니다.
     # 색상은 r - g - b - 다시 r로 전환됩니다.
@@ -74,6 +76,7 @@ try:
         token = response.json().get('token')
         if token:
             print(f"토큰을 성공적으로 받음.{token}")
+            single_ton.set('token', token)
         else:
             token=""
             print("토큰 저장 실패")
@@ -88,10 +91,13 @@ rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 
 # YAMNet 모델 로드
 model = tf.saved_model.load('client_firmware/yamnetModel')
+single_ton.set('model', model)
+
 #오류시 Current working directory 확인
 # 클래스 이름 로드
 class_map_path = model.class_map_path().numpy()
-class_names = class_names_from_csv(class_map_path)
+single_ton.set('class_names', class_names_from_csv(class_map_path))
+
 
 
 pyaudio_0 = pyaudio.PyAudio()
@@ -102,6 +108,9 @@ CHANNELS = 1
 RATE = 48000
 CHUNK = 1024  # 한번에 처리할 오디오 수
 
+single_ton.set('RATE', RATE)
+single_ton.set('SPEECH_THRESHOLD', SPEECH_THRESHOLD)
+
 # 오디오 스트림 열기
 stream = pyaudio_0.open(format=FORMAT,
                 channels=CHANNELS,
@@ -111,7 +120,6 @@ stream = pyaudio_0.open(format=FORMAT,
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 print("* 녹음 시작")
 
-single_ton = CacheManager()
 #대화모드 발화 여부 점수
 single_ton.set('speech_detect_score', 0)
 #대화모드 끊김 감지 시 API로 보낼 데이터
@@ -126,8 +134,8 @@ try:
         except Exception as e:
             print(f"오디오 입력 오류 발생: {e}")
             break
-
-        audio_processing(data, RATE, SPEECH_THRESHOLD, model, token, class_names, current_time_before)
+        thread = threading.Thread(target=audio_processing, args=(data, current_time_before))
+        thread.start()
         
 
 except KeyboardInterrupt:

@@ -6,9 +6,13 @@ from rest import *
 from azure_stt import *
 from CacheManager import *
 
-def audio_processing(data, RATE, SPEECH_THRESHOLD , model, token, class_names, current_time_before):
+def audio_processing(data, current_time_before):
     single_ton = CacheManager()
-
+    RATE = single_ton.get('RATE')
+    class_names= single_ton.get('class_names')
+    SPEECH_THRESHOLD = single_ton.get('SPEECH_THRESHOLD')
+    token = single_ton.get('token')
+    model = single_ton.get('model')
 
     #YamNet을 위한 변환
     # 바이트 데이터를 16비트 정수 배열로 변환
