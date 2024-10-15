@@ -35,14 +35,14 @@ def audio_processing(data, current_time_before):
     top_class_index = np.argmax(average_scores)
     top_class = class_names[top_class_index]
     top_class_score = int(average_scores[top_class_index]* 100)  # 최고 점수 클래스의 정확도
-
+    speech_detect_score = single_ton.get('speech_detect_score')
     if is_conversation(top_class_index) and speech_detect_score < SPEECH_THRESHOLD*4:
         speech_detect_score += sigmoid(average_scores[top_class_index])
     elif speech_detect_score >= SPEECH_THRESHOLD and not is_conversation(top_class_index):
         speech_detect_score -= sigmoid(speech_detect_score)
     elif not is_conversation(top_class_index) and speech_detect_score > -1:
         speech_detect_score -= sigmoid(average_scores[top_class_index])
-
+    single_ton.set('speech_detect_score')
     #평균 볼륨 계산
     # 데이터를 16비트 정수 배열로 변환
     audio_array = np.frombuffer(data, dtype=np.int16)
