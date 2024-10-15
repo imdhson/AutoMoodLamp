@@ -102,11 +102,11 @@ single_ton.set('class_names', class_names_from_csv(class_map_path))
 
 pyaudio_0 = pyaudio.PyAudio()
 # 오디오 설정
-SECOND = 2
+SECOND = 3
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 48000
-CHUNK = 1024  # 한번에 처리할 오디오 수
+CHUNK = 48000  # 한번에 처리할 오디오 수
 
 single_ton.set('RATE', RATE)
 single_ton.set('SPEECH_THRESHOLD', SPEECH_THRESHOLD)
@@ -130,7 +130,7 @@ try:
         try:
             # 오디오 데이터 읽기
             current_time_before = datetime.now().isoformat()
-            data = stream.read(CHUNK * 2 ** SECOND, exception_on_overflow=False)
+            data = stream.read(CHUNK * SECOND, exception_on_overflow=False)
         except Exception as e:
             print(f"오디오 입력 오류 발생: {e}")
             break
