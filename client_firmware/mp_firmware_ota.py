@@ -127,8 +127,8 @@ try:
             current_time_before = datetime.now().isoformat()
             data = b''.join([stream.read(CHUNK) for _ in range(20 * SECOND)])
             current_time_after = datetime.now().isoformat()
-        except OSError as e:
-            print(f"오디오 입력 오류 ㅏㄹ생: {e}")
+        except Exception as e:
+            print(f"오디오 입력 오류 발생: {e}")
             continue
 
         #YamNet을 위한 변환
