@@ -13,6 +13,7 @@ from modules.rest import *
 from modules.classification import *
 from modules.azure_stt import *
 from modules.audio_processing import *
+from modules.CacheManager import *
 
 import time
 
@@ -110,12 +111,12 @@ stream = pyaudio_0.open(format=FORMAT,
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 print("* 녹음 시작")
 
+single_ton = CacheManager()
 #대화모드 발화 여부 점수
-speech_detect_score = 0
-
+single_ton.set('speech_detect_score', 0)
 #대화모드 끊김 감지 시 API로 보낼 데이터
-conv_mode_data = []
-conv_mode_bool = False
+single_ton.set('conv_mode_data' , [])
+single_ton.set('conv_mode_bool' , False)
 try:
     while True:
         try:
@@ -126,7 +127,7 @@ try:
             print(f"오디오 입력 오류 발생: {e}")
             break
 
-        audio_processing(data=data, RATE=RATE, model=model)
+        audio_processing(data, RATE, SPEECH_THRESHOLD, model, token, class_names, current_time_before)
         
 
 except KeyboardInterrupt:
