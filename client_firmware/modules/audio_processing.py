@@ -57,13 +57,22 @@ def audio_processing(data, current_time_before):
     print("평균 볼륨: ", avg_volume, end=' | ')
     print(f"대화모드점수:{single_ton.get('speech_detect_score'):.2f}", end = ' | ')
     print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
+    pixels = single_ton.get('pixels')
+    pixels.fill(set_color(class_idx=top_class_index))
+
     if single_ton.get('speech_detect_score') >= SPEECH_THRESHOLD:
         print(f"[대화모드]", end = '')
         single_ton.set('conv_mode_bool', True)
         #대화모드 상태이면 conv_mode_data에 append.
-        single_ton.set('conv_mode_data', single_ton.get('conv_mode_data').append(np.frombuffer(data, dtype=np.int16)))
+        temp = single_ton.get('conv_mode_data')
+        # print("11111111111", type(temp), temp)
+        temp.append(np.frombuffer(data, dtype=np.int16))
+        single_ton.set('conv_mode_data', temp)
+        
     elif single_ton.get('conv_mode_bool') and single_ton.get('speech_detect_score') <= SPEECH_THRESHOLD:
-        conv_mode_data_s = np.concatenate(single_ton.get('conv_mode_data'))
+        temp = single_ton.get('conv_mode_data')
+        # print("22222222222", type(temp), temp)
+        conv_mode_data_s = np.concatenate(temp)
         wavfile.write("api_audio.wav", RATE, conv_mode_data_s)
         print("\napi_audio.wav 저장완료. Azure STT 활용 시작")
 

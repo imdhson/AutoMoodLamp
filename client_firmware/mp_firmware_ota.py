@@ -58,6 +58,8 @@ ORDER = neopixel.GRB
 pixels = neopixel.NeoPixel(
     pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
 )
+
+single_ton.set('pixels', pixels)
 rainbow_cycle(0.01)  # 1ms 지연으로 무지개 순환
 
 #대화모드 설정 0.x~...
@@ -136,8 +138,6 @@ try:
             break
         thread = threading.Thread(target=audio_processing, args=(data, current_time_before))
         thread.start()
-        
-
 except KeyboardInterrupt:
     print("* 녹음 종료")
 
