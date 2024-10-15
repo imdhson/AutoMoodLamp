@@ -59,6 +59,7 @@ def audio_processing(data, current_time_before):
     print(f"{top_class}[{top_class_index}]: {top_class_score}%", end = '')
     pixels = single_ton.get('pixels')
     pixels.fill(set_color(class_idx=top_class_index))
+    pixels.show()
 
     if single_ton.get('speech_detect_score') >= SPEECH_THRESHOLD:
         print(f"[대화모드]", end = '')
