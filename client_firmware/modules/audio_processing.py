@@ -72,10 +72,10 @@ def audio_processing(data, current_time_before):
         single_ton.set('conv_mode_data', [])
         single_ton.set('conv_mode_bool', False)
                   
-        print()
-        #매 3초마다 결과 나오면 server/accounts/add-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
-        # 서버의 로그인중인 계정(token)에 업로드
-        add_sequence_data_rest(token=token, timestamp=current_time_before,
+    print()
+    #매 3초마다 결과 나오면 server/accounts/add-sequence-data/ 여기다가 결과 시간, class_name, 정확도를 
+    # 서버의 로그인중인 계정(token)에 업로드
+    add_sequence_data_rest(token=token, timestamp=current_time_before,
                         class_idx=top_class_index, 
                         class_name=top_class, 
                         percent=top_class_score,
