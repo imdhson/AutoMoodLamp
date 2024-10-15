@@ -42,7 +42,7 @@ def audio_processing(data, current_time_before):
         speech_detect_score -= sigmoid(speech_detect_score)
     elif not is_conversation(top_class_index) and speech_detect_score > -1:
         speech_detect_score -= sigmoid(average_scores[top_class_index])
-    single_ton.set('speech_detect_score')
+    single_ton.set('speech_detect_score', speech_detect_score)
     #평균 볼륨 계산
     # 데이터를 16비트 정수 배열로 변환
     audio_array = np.frombuffer(data, dtype=np.int16)
