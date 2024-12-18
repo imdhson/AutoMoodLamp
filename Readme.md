@@ -98,12 +98,13 @@ systemctl start automoodlamp
 - API 방식 로그인 구현
 - 디바이스 연결 및 관리
 - 환경 분석 결과 시각화 (그래프 형태)
-- 대화 내용(텍스트) 및 감정 분석 결과 열람
+- 대화 내용(Azure STT API) 및 감정 분석 결과 열람
 
 ## 발표, 구동 영상
 
 ### Youtube:
-[Video Title
+[![Video Title](https://img.youtube.com/vi/1lgL65r2zTU/0.jpg)](https://www.youtube.com/watch?v=1lgL65r2zTU)
+
 
 ## 라이선스
 
