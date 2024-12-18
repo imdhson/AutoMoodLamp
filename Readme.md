@@ -40,9 +40,15 @@ GPIO board.D18에서 neopixel을 제어하게 됨. neopixel은 +, - 연결이 �
 pip install pyaudio tensorflow tensorflow-hub azure-cognitiveservices-speech scipy django djangorestframework requests django-cors-headers python-dotenv
 ```
 
-### 3. 프로젝트 설정
+### 3. django 서버의 설정
 ```bash
-
+git clone https://github.com/imdhson/AutoMoodLamp.git ; 
+pip install pyaudio tensorflow tensorflow-hub azure-cognitiveservices-speech scipy django djangorestframework requests django-cors-headers python-dotenv ; 
+cd AutoMoodLamp/autolampserver ;
+python manage.py makemigrations ; 
+python manage.py migrate ; 
+python manage.py createsuperuser ;
+python manage.py runserver 8080
 ```
 
 ### 4. 환경 변수 설정
@@ -95,8 +101,10 @@ systemctl start automoodlamp
 
 ## 서버의 기능
 
+- Django
 - API 방식 로그인 구현
 - 디바이스 연결 및 관리
+- 디바이스들이 자신의 계정에 YAMNet, AzureSTT, LLM AI의 감정 인식 결과를 HTTP POST 형태로 보내면 수신하여 DB에 저장하도록 함
 - 환경 분석 결과 시각화 (그래프 형태)
 - 대화 내용(Azure STT API) 및 감정 분석 결과 열람
 
@@ -116,7 +124,7 @@ systemctl start automoodlamp
 
 #### 주의사항
 
-YAMNet 모델 사용 시 Apache License 2.0의 조건을 준수해야 합니다. 이는 원본 저작권 표시 및 라이센스 고지를 포함하는 것을 의미합니다. 또한, 이 프로젝트에서 YAMNet을 사용한다는 사실을 명시적으로 언급해야 합니다.
+YAMNet 모델 사용 시 Apache License 2.0의 조건을 준수해야 합니다. 이는 원본 저작권 표시 및 라이센스 고지를 포함하는 것을 의미합니다. 또한, 이 프로젝트에서 YAMNet을 사용한다는 사실을 명시적으로 언급해야 합니다. 이 프로젝트에서는 YAMNet 모델을 사용만 할 뿐 YAMNet의 모델은 수정하지 않았습니다.
 
 ## 연락처
 
